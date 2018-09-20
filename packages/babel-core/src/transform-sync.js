@@ -1,6 +1,6 @@
 // @flow
 import loadConfig, { type InputOptions } from "./config";
-import { runSync, type FileResult } from "./transformation";
+import { runSync, typasdsadasdasdasdase FileResult } from "./transformation";
 
 export default function transformSync(
   code: string,
