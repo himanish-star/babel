@@ -10,11 +10,11 @@ export default class ImportBuilder {
   _resultName = null;
 
   _scope = null;
-  _file = null;
+  _hub = null;
 
-  constructor(importedSource, scope, file) {
+  constructor(importedSource, scope, hub) {
     this._scope = scope;
-    this._file = file;
+    this._hub = hub;
     this._importedSource = importedSource;
   }
 
@@ -50,7 +50,7 @@ export default class ImportBuilder {
     assert(statement.type === "ImportDeclaration");
     assert(statement.specifiers.length === 0);
     statement.specifiers = [t.importNamespaceSpecifier(name)];
-    this._resultName = t.clone(name);
+    this._resultName = t.cloneNode(name);
     return this;
   }
   default(name) {
@@ -59,7 +59,7 @@ export default class ImportBuilder {
     assert(statement.type === "ImportDeclaration");
     assert(statement.specifiers.length === 0);
     statement.specifiers = [t.importDefaultSpecifier(name)];
-    this._resultName = t.clone(name);
+    this._resultName = t.cloneNode(name);
     return this;
   }
   named(name, importName) {
@@ -70,7 +70,7 @@ export default class ImportBuilder {
     assert(statement.type === "ImportDeclaration");
     assert(statement.specifiers.length === 0);
     statement.specifiers = [t.importSpecifier(name, t.identifier(importName))];
-    this._resultName = t.clone(name);
+    this._resultName = t.cloneNode(name);
     return this;
   }
 
@@ -86,15 +86,15 @@ export default class ImportBuilder {
       "var",
       [t.variableDeclarator(name, statement.expression)],
     );
-    this._resultName = t.clone(name);
+    this._resultName = t.cloneNode(name);
     return this;
   }
 
   defaultInterop() {
-    return this._interop(this._file.addHelper("interopRequireDefault"));
+    return this._interop(this._hub.addHelper("interopRequireDefault"));
   }
   wildcardInterop() {
-    return this._interop(this._file.addHelper("interopRequireWildcard"));
+    return this._interop(this._hub.addHelper("interopRequireWildcard"));
   }
 
   _interop(callee) {

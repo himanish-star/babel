@@ -1,6 +1,6 @@
 // @flow
 
-type SimpleCacheConfigurator = SimpleCacheConfiguratorFn &
+export type SimpleCacheConfigurator = SimpleCacheConfiguratorFn &
   SimpleCacheConfiguratorObj;
 
 type SimpleCacheConfiguratorFn = {
@@ -14,9 +14,10 @@ type SimpleCacheConfiguratorObj = {
   invalidate: <T>(handler: () => T) => T,
 };
 
-type CacheEntry<ResultT, SideChannel> = Array<
-  [ResultT, (SideChannel) => boolean],
->;
+type CacheEntry<ResultT, SideChannel> = Array<{
+  value: ResultT,
+  valid: SideChannel => boolean,
+}>;
 
 export type { CacheConfigurator };
 
@@ -64,7 +65,7 @@ function makeCachedFunction<
     );
 
     if (cachedValue) {
-      for (const [value, valid] of cachedValue) {
+      for (const { value, valid } of cachedValue) {
         if (valid(data)) return value;
       }
     }
@@ -79,18 +80,18 @@ function makeCachedFunction<
 
     switch (cache.mode()) {
       case "forever":
-        cachedValue = [[value, () => true]];
+        cachedValue = [{ value, valid: () => true }];
         callCache.set(arg, cachedValue);
         break;
       case "invalidate":
-        cachedValue = [[value, cache.validator()]];
+        cachedValue = [{ value, valid: cache.validator() }];
         callCache.set(arg, cachedValue);
         break;
       case "valid":
         if (cachedValue) {
-          cachedValue.push([value, cache.validator()]);
+          cachedValue.push({ value, valid: cache.validator() });
         } else {
-          cachedValue = [[value, cache.validator()]];
+          cachedValue = [{ value, valid: cache.validator() }];
           callCache.set(arg, cachedValue);
         }
     }
@@ -205,12 +206,29 @@ function makeSimpleConfigurator(
       return;
     }
 
-    return cache.using(val);
+    return cache.using(() => assertSimpleType(val()));
   }
   cacheFn.forever = () => cache.forever();
   cacheFn.never = () => cache.never();
-  cacheFn.using = cb => cache.using(() => cb());
-  cacheFn.invalidate = cb => cache.invalidate(() => cb());
+  cacheFn.using = cb => cache.using(() => assertSimpleType(cb()));
+  cacheFn.invalidate = cb => cache.invalidate(() => assertSimpleType(cb()));
 
   return (cacheFn: any);
+}
+
+// Types are limited here so that in the future these values can be used
+// as part of Babel's caching logic.
+type SimpleType = string | boolean | number | null | void;
+export function assertSimpleType(value: mixed): SimpleType {
+  if (
+    value != null &&
+    typeof value !== "string" &&
+    typeof value !== "boolean" &&
+    typeof value !== "number"
+  ) {
+    throw new Error(
+      "Cache keys must be either string, boolean, number, null, or undefined.",
+    );
+  }
+  return value;
 }

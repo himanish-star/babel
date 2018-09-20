@@ -19,13 +19,13 @@ export type Format = {
   auxiliaryCommentAfter: string,
   compact: boolean | "auto",
   minified: boolean,
-  quotes: "single" | "double",
   concise: boolean,
   indent: {
     adjustMultilineComment: boolean,
     style: string,
     base: number,
   },
+  decoratorsBeforeExport: boolean,
 };
 
 export default class Printer {
@@ -116,7 +116,10 @@ export default class Printer {
    */
 
   word(str: string): void {
-    if (this._endsWithWord) this._space();
+    // prevent concatenating words and creating // comment out of division and regex
+    if (this._endsWithWord || (this.endsWith("/") && str.indexOf("/") === 0)) {
+      this._space();
+    }
 
     this._maybeAddAuxComment();
     this._append(str);
@@ -195,6 +198,12 @@ export default class Printer {
 
   removeTrailingNewline(): void {
     this._buf.removeTrailingNewline();
+  }
+
+  exactSource(loc: Object, cb: () => void) {
+    this._catchUp("start", loc);
+
+    this._buf.exactSource(loc, cb);
   }
 
   source(prop: string, loc: Object): void {

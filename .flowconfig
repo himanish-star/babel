@@ -5,6 +5,7 @@
 .*/codemods/.*/lib
 .*/codemods/.*/test
 .*/node_modules/conventional-changelog-core/
+.*/node_modules/module-deps/
 
 [include]
 packages/*/src
@@ -13,8 +14,8 @@ codemods/*/src
 [libs]
 lib/file.js
 lib/parser.js
-lib/types.js
 lib/third-party-libs.js.flow
+packages/babel-types/lib/index.js.flow
 
 [options]
 include_warnings=true

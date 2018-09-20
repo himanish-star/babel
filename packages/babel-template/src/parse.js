@@ -1,7 +1,7 @@
 // @flow
 import * as t from "@babel/types";
 import type { TraversalAncestors, TraversalHandler } from "@babel/types";
-import { parse } from "babylon";
+import { parse } from "@babel/parser";
 import { codeFrameColumns } from "@babel/code-frame";
 import type { TemplateOpts } from "./options";
 import type { Formatter } from "./formatters";
@@ -64,7 +64,7 @@ function placeholderVisitorHandler(
   state: MetadataState,
 ) {
   let name;
-  if (t.isIdentifier(node)) {
+  if (t.isIdentifier(node) || t.isJSXIdentifier(node)) {
     name = ((node: any): BabelNodeIdentifier).name;
   } else if (t.isStringLiteral(node)) {
     name = ((node: any): BabelNodeStringLiteral).value;
@@ -134,22 +134,21 @@ type MetadataState = {
 };
 
 function parseWithCodeFrame(code: string, parserOpts: {}): BabelNodeFile {
-  parserOpts = Object.assign(
-    {
-      allowReturnOutsideFunction: true,
-      allowSuperOutsideMethod: true,
-      sourceType: "module",
-    },
-    parserOpts,
-  );
+  parserOpts = {
+    allowReturnOutsideFunction: true,
+    allowSuperOutsideMethod: true,
+    sourceType: "module",
+    ...parserOpts,
+  };
 
   try {
+    // $FlowFixMe - The parser AST is not the same type as the babel-types type.
     return parse(code, parserOpts);
   } catch (err) {
     const loc = err.loc;
     if (loc) {
-      err.loc = null;
       err.message += "\n" + codeFrameColumns(code, { start: loc });
+      err.code = "BABEL_TEMPLATE_PARSE_ERROR";
     }
     throw err;
   }

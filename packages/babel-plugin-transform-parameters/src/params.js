@@ -60,7 +60,8 @@ export default function convertFunctionParams(path, loose) {
   for (let i = 0; i < params.length; i++) {
     const param = params[i];
 
-    if (param.isAssignmentPattern() && loose) {
+    const paramIsAssignmentPattern = param.isAssignmentPattern();
+    if (paramIsAssignmentPattern && (loose || node.kind === "set")) {
       const left = param.get("left");
       const right = param.get("right");
 
@@ -69,7 +70,7 @@ export default function convertFunctionParams(path, loose) {
       if (left.isIdentifier()) {
         body.push(
           buildLooseDefaultParam({
-            ASSIGNMENT_IDENTIFIER: left.node,
+            ASSIGNMENT_IDENTIFIER: t.cloneNode(left.node),
             DEFAULT_VALUE: right.node,
             UNDEFINED: undefinedNode,
           }),
@@ -81,19 +82,18 @@ export default function convertFunctionParams(path, loose) {
           buildLooseDestructuredDefaultParam({
             ASSIGNMENT_IDENTIFIER: left.node,
             DEFAULT_VALUE: right.node,
-            PARAMETER_NAME: paramName,
+            PARAMETER_NAME: t.cloneNode(paramName),
             UNDEFINED: undefinedNode,
           }),
         );
         param.replaceWith(paramName);
       }
-    } else if (param.isAssignmentPattern()) {
+    } else if (paramIsAssignmentPattern) {
       if (firstOptionalIndex === null) firstOptionalIndex = i;
 
       const left = param.get("left");
       const right = param.get("right");
 
-      //
       if (!state.iife) {
         if (right.isIdentifier() && !isSafeBinding(scope, right.node)) {
           // the right hand side references a parameter
@@ -123,7 +123,7 @@ export default function convertFunctionParams(path, loose) {
       ]);
       body.push(defNode);
 
-      param.replaceWith(uid);
+      param.replaceWith(t.cloneNode(uid));
     }
 
     if (!state.iife && !param.isIdentifier()) {

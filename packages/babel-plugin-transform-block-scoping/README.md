@@ -2,82 +2,18 @@
 
 > Compile ES2015 block scoping (const and let) to ES5
 
-## Examples
+See our website [@babel/plugin-transform-block-scoping](https://babeljs.io/docs/en/next/babel-plugin-transform-block-scoping.html) for more information.
 
-**In**
+## Install
 
-```javascript
-{
-  let a = 3
-}
-
-let a = 3
-```
-
-**Out**
-
-```javascript
-{
-  var _a = 3;
-}
-
-var a = 3;
-```
-
-## Installation
+Using npm:
 
 ```sh
 npm install --save-dev @babel/plugin-transform-block-scoping
 ```
 
-## Usage
-
-### Via `.babelrc` (Recommended)
-
-**.babelrc**
-
-Without options:
-
-```json
-{
-  "plugins": ["@babel/plugin-transform-block-scoping"]
-}
-```
-
-With options:
-
-```json
-{
-  "plugins": [
-    ["@babel/plugin-transform-block-scoping", {
-      "throwIfClosureRequired": true
-    }]
-  ]
-}
-```
-
-### Via CLI
+or using yarn:
 
 ```sh
-babel --plugins @babel/plugin-transform-block-scoping script.js
+yarn add @babel/plugin-transform-block-scoping --dev
 ```
-
-### Via Node API
-
-```javascript
-require("@babel/core").transform("code", {
-  plugins: ["@babel/plugin-transform-block-scoping"]
-});
-```
-
-## Options `throwIfClosureRequired`
-
-In cases such as the following it's impossible to rewrite let/const without adding an additional function and closure while transforming:
-
-```javascript
-for (let i = 0; i < 5; i++) {
-  setTimeout(() => console.log(i), 1);
-}
-```
-
-In extremely performance-sensitive code, this can be undesirable. If `"throwIfClosureRequired": true` is set, Babel throws when transforming these patterns instead of automatically adding an additional function.

@@ -73,6 +73,7 @@ function spaceSeparator() {
 export function JSXOpeningElement(node: Object) {
   this.token("<");
   this.print(node.name, node);
+  this.print(node.typeParameters, node); // TS
   if (node.attributes.length > 0) {
     this.space();
     this.printJoin(node.attributes, node, { separator: spaceSeparator });
@@ -91,7 +92,9 @@ export function JSXClosingElement(node: Object) {
   this.token(">");
 }
 
-export function JSXEmptyExpression() {}
+export function JSXEmptyExpression(node: Object) {
+  this.printInnerComments(node);
+}
 
 export function JSXFragment(node: Object) {
   this.print(node.openingFragment, node);
