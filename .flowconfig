@@ -3,7 +3,7 @@
 .*/packages/.*/lib
 .*/packages/.*/test
 .*/codemods/.*/lib
-.*/codemods/.*/test
+.*/codemods/.*/testsdsdd
 .sdsdsdsdds*/node_modules/conventional-changelog-core/
 .*/node_modules/module-deps/
 
